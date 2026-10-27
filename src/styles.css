@@ -1070,3 +1070,5 @@ h1 {font-size:25px;letter-spacing:.045em;}
 .activity-feed:has(.activity-entry.active){max-height:142px}.activity-entry-meta strong{display:inline-flex;align-items:center;gap:5px}.field-activity .field-cells{padding:7px 0 12px}.field-activity .hint{line-height:1.5}
 
 .mobile-runtime-state{display:none}.basemap-current{display:block;background:#e99b0b;color:#151a1e;font-size:13px;font-weight:600;padding:9px 13px;border-radius:4px}@media(max-width:800px){.mobile-runtime-state{display:block;color:#a7bdcb;font-size:12px;margin:10px 0}}
+
+.activity-feed:has(.activity-entry.active){max-height:96px}.activity-entry.active .activity-entry-message{-webkit-line-clamp:1}.field-activity .field-context{margin:8px 0 0}
