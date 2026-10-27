@@ -1,7 +1,7 @@
 const ROOT = "https://api.terrasatch.com";
 const UUID = "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}";
 const ORG = "^/api/v1/workspace/organizations/" + UUID;
-const READ = new RegExp(ORG + "(?:$|/radio/events$|/runs(?:/" + UUID + ")?$|/modules/(?:catalog|environment)$|/simulations/(?:capabilities|sessions/" + UUID + "|plans/" + UUID + "|missions(?:/" + UUID + "(?:/telemetry|/track)?)?))$");
+const READ = new RegExp(ORG + "(?:$|/radio/events$|/runs(?:/" + UUID + ")?$|/modules/(?:catalog|environment)$|/simulations/(?:demo-contexts|activity|capabilities|sessions/" + UUID + "|plans/" + UUID + "|missions(?:/" + UUID + "(?:/telemetry|/track)?)?))$");
 const CONTROL = new RegExp(ORG + "/simulations/(?:sessions|assets|plans(?:/" + UUID + "/(?:approve|dispatch))?)$");
 const CHAT = new RegExp(ORG + "/chat$");
 export function allowedPath(method, path) {

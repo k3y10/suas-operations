@@ -14,7 +14,7 @@ import {buildMissionCells,cellFeatures,regionFeatures} from './cell-coverage.js'
 import WindLayer from './WindLayer.jsx';
 import {geometryBounds,overlayFeatures} from './operation-geometry.js';
 import {droneSymbolPixels,cellLabelDetail,cellScreenSpan,ROUTE_WIDTH,CELL_WIDTH} from './map-scale.js';
-function SingleMap({ three, target, setTarget, regions, offline, basemap, plan, cells, coverage, cellMode, selectedCell, setSelectedCell, domain, clock, flight, mobile, cellContext, selectedRegion, onRegion, overlayData, rain, layers, selectedCells, onCells, selectable, weather }) {
+function SingleMap({ three, target, setTarget, regions, offline, basemap, plan, cells, coverage, cellMode, selectedCell, setSelectedCell, domain, clock, flight, mobile, cellContext, selectedRegion, onRegion, overlayData, rain, layers, selectedCells, onCells, selectable, weather, fieldObservation, focusMission }) {
   const element = useRef(null),
     map = useRef(null),
     marker = useRef(null),
@@ -26,7 +26,7 @@ function SingleMap({ three, target, setTarget, regions, offline, basemap, plan, 
     [error, setError] = useState(""),
     [ready, setReady] = useState(false);
   surveyBounds.current=plan?.geometry?.features?.find(f=>f.properties.kind==='boundary')?.geometry;
-  const interaction=useRef({});interaction.current={setTarget,setSelectedCell,onRegion,regions,selectable,selectedCells,onCells};
+  const interaction=useRef({});interaction.current={setTarget,setSelectedCell,onRegion,regions,selectable,selectedCells,onCells,regionId:selectedRegion?.id};
   const wind=mapWind(weather,clock);
   useEffect(() => {
     let m;
@@ -55,7 +55,7 @@ function SingleMap({ three, target, setTarget, regions, offline, basemap, plan, 
         const hit=m.getLayer('scan-cells-fill')?m.queryRenderedFeatures(e.point,{layers:['scan-cells-fill']})[0]:null;
         if(hit){const id=hit.properties.id;interaction.current.setSelectedCell(id);if(interaction.current.selectable)interaction.current.onCells(old=>old.includes(id)?old.filter(x=>x!==id):[...old,id]);return;}
         const regionHit=m.getLayer('context-fill')?m.queryRenderedFeatures(e.point,{layers:['context-fill']})[0]:null;
-        if(regionHit&&!interaction.current.selectable){const r=interaction.current.regions.find(r=>r.id===regionHit.properties.id);if(r)interaction.current.onRegion(r);return;}
+        if(regionHit&&interaction.current.selectable&&regionHit.properties.id!==interaction.current.regionId){const r=interaction.current.regions.find(r=>r.id===regionHit.properties.id);if(r)interaction.current.onRegion(r);return;}
         interaction.current.setTarget([Number(e.lngLat.lng.toFixed(5)),Number(e.lngLat.lat.toFixed(5))]);
       });
       m.on("load", () => {
@@ -166,7 +166,7 @@ function SingleMap({ three, target, setTarget, regions, offline, basemap, plan, 
     if(plan){const ring=plan.geometry.features.find(f=>f.properties.kind==='boundary').geometry.coordinates[0];m.fitBounds([ring[0],ring[2]],{padding:75,maxZoom:MAX_MAP_ZOOM,duration:400});}
   }, [plan,ready]);
   useEffect(()=>{if(!ready)return;const m=map.current;m.getSource('context-extra').setData(overlayFeatures(overlayData,domain==='Pyro'?layers:{}));},[ready,overlayData,layers,domain]);
-  useEffect(()=>{if(!ready||!selectedRegion?.geometry)return;const bounds=geometryBounds(selectedRegion.geometry);if(bounds)map.current.fitBounds(bounds,{padding:45,maxZoom:12,duration:500});},[ready,selectedRegion?.id]);
+  useEffect(()=>{if(!ready||!selectedRegion?.geometry||focusMission)return;const bounds=geometryBounds(selectedRegion.geometry);if(bounds)map.current.fitBounds(bounds,{padding:45,maxZoom:12,duration:500});},[ready,selectedRegion?.id,focusMission]);
   useEffect(()=>{if(!ready)return;const m=map.current;if(m.getLayer('rainfall'))m.removeLayer('rainfall');if(m.getSource('rainfall'))m.removeSource('rainfall');if(domain==='Pyro'&&layers?.rain&&rain?.fresh){m.addSource('rainfall',{type:'raster',tiles:[rain.tileURL],tileSize:256,maxzoom:13,attribution:'NOAA MRMS · 24 h QPE estimate'});m.addLayer({id:'rainfall',type:'raster',source:'rainfall',paint:{'raster-opacity':.42}},'context-fill');}},[ready,rain?.tileURL,rain?.fresh,layers?.rain,domain]);
   useEffect(()=>{if(!ready)return;const features=[];if(domain==='Pyro'&&layers?.drainage)for(const cell of cells){const t=cellContext[cell.id]?.terrain;if(!Number.isFinite(t?.aspectDegrees))continue;const a=t.aspectDegrees*Math.PI/180,d=.00025,dx=Math.sin(a)*d/Math.cos(cell.center[1]*Math.PI/180),dy=Math.cos(a)*d,end=[cell.center[0]+dx,cell.center[1]+dy];features.push({type:'Feature',properties:{},geometry:{type:'MultiLineString',coordinates:[[cell.center,end],[[end[0]-dx*.3-dy*.25,end[1]-dy*.3+dx*.25],end,[end[0]-dx*.3+dy*.25,end[1]-dy*.3-dx*.25]]]}});}map.current.getSource('downhill').setData({type:'FeatureCollection',features});},[ready,cellContext,cells,layers?.drainage,domain]);
   useEffect(() => {
@@ -182,6 +182,12 @@ function SingleMap({ three, target, setTarget, regions, offline, basemap, plan, 
         .addTo(map.current);
     return () => marker.current?.remove();
   }, [target, ready, plan]);
+  useEffect(()=>{
+    if(!ready||!fieldObservation?.point)return;
+    const el=document.createElement('div');el.className='field-observation-marker';el.setAttribute('role','img');el.setAttribute('aria-label',fieldObservation.label);el.textContent='!';
+    const observationMarker=new maplibregl.Marker({element:el}).setLngLat(fieldObservation.point).setPopup(new maplibregl.Popup().setText(fieldObservation.label)).addTo(map.current);
+    return()=>observationMarker.remove();
+  },[ready,fieldObservation?.id,fieldObservation?.label,fieldObservation?.point]);
   useEffect(()=>{
     labels.current.forEach(label=>label.marker.remove());labels.current=[];
     if(!ready)return;
@@ -315,7 +321,7 @@ export default function MapWorkspace(props) {
           {BASEMAPS[effectiveBasemap].note} ↗
         </a>
       </div>
-      {(!props.flight?.source||runtimePlan)&&<ScanCoverage mobile={props.mobile} cells={indexed.cells} resolution={indexed.resolution} error={indexed.error} planId={effectivePlanId} revision={effectivePlan?.revision} domain={props.domain} mode={cellMode} setMode={setCellMode} selected={selectedCell} setSelected={setSelectedCell} feed={visibleFeed} context={cellContext} terrainStatus={terrainStatus}/>}
+      {(!props.flight?.source||runtimePlan)&&<ScanCoverage mobile={props.mobile} compact={props.focusMission} selectionCount={props.focusMission&&!runtimePlan?props.selectedCells?.length??0:null} cells={indexed.cells} resolution={indexed.resolution} error={indexed.error} planId={effectivePlanId} revision={effectivePlan?.revision} domain={props.domain} mode={cellMode} setMode={setCellMode} selected={selectedCell} setSelected={setSelectedCell} feed={visibleFeed} context={cellContext} terrainStatus={terrainStatus}/>}
       {globalFlight&&<span className="global-flight-note">Historical flight outside USGS imagery coverage · coordinates preserved</span>}
       <FlightHUD feed={props.flight}/>
       {props.mode === "Split view" && (

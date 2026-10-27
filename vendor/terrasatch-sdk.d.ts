@@ -1,5 +1,5 @@
 // AUTO-GENERATED FROM TERRASATCH OPENAPI. DO NOT EDIT BY HAND.
-// schema-sha256: 92f0581e5a7911e622e8304648b7d3da8ffa9c4906a2e086d60cee79d37c6e18
+// schema-sha256: 44f19957e8d47990f2d940f5cc890270af7b95fbc1527a702f85203e14784d96
 
 export type ActiveMapContext = {
   center_latitude?: number | null;
@@ -393,6 +393,7 @@ export type PlanResponse = {
   integrity?: Record<string, unknown> | null;
   mission_id: string;
   plan: Record<string, unknown>;
+  recon_results?: Record<string, unknown> | null;
   status: string;
 };
 
@@ -417,6 +418,8 @@ export type Proposal = {
   latitude: number;
   longitude: number;
   previous_mission_id?: string | null;
+  quick_survey?: boolean;
+  recon_selection?: ReconSelection | null;
   request_id: string;
   selected_cell_ids?: string[] | null;
   session_id: string;
@@ -429,6 +432,16 @@ export type PushInput = {
   endpoint: string;
   keys: Record<string, string>;
   site_id: string;
+};
+
+export type ReconSelection = {
+  confirmed: true;
+  context_id: "alta" | "slough-canyon";
+  gps_accuracy_m?: number | null;
+  selected_at: string;
+  source_id: string;
+  source_kind: "radio" | "photon";
+  source_text_hash: string;
 };
 
 export type RecordPage = {
@@ -596,6 +609,10 @@ export type SimulationSessionCreate = {
 
 export type SimulationTelemetryPage = {
   connected: boolean;
+  coverage?: Record<string, unknown>[];
+  flight_result?: Record<string, unknown> | null;
+  gateway_connected?: boolean | null;
+  mission_plan?: Record<string, unknown> | null;
   next_cursor?: string | null;
   samples?: SimulationTelemetrySample[];
   stale: boolean;

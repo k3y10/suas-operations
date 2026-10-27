@@ -9,7 +9,7 @@ export function useFlightFeed({org,signedIn,offline}){
  function stop(){setSource(null);setData(null);setPlaying(false);setCursor(0);setError('');}
  function replay(){setSource({type:'replay'});setData(loaded);setCursor(loaded.samples[0].time);setPlaying(true);setError('');}
  function replayCaptured(){if(!data?.samples.length||data.mode!=='recorded')return;setSource({type:'replay'});setCursor(data.samples[0].time);setPlaying(true);setError('');}
- function local(){setSource({type:'local'});setData(null);setPlaying(false);setError('');}
+ function local(id){setSource({type:'local',id:typeof id==='string'&&UUID_RE.test(id)?id:null});setData(null);setPlaying(false);setError('');}
  function mission(id){if(!UUID_RE.test(id)){setError('Enter a valid simulator mission ID.');return;}setSource({type:'api',id,org});setData(null);setPlaying(false);setError('');}
  useEffect(()=>{if(source?.type==='api'&&(!signedIn||source.org!==org)){stop();}},[org,signedIn,source]);
  useEffect(()=>{
@@ -26,10 +26,10 @@ export function useFlightFeed({org,signedIn,offline}){
     if(source.type==='local'){
      const r=await fetch('/api/local-sitl',{cache:'no-store',signal:controller.signal});
      if(!(r.headers.get('content-type')||'').includes('application/json'))throw Error('Local PX4 monitoring is available only on the configured localhost preview.');
-     const packet=await r.json();if(!r.ok)throw Error(packet.detail||'Local telemetry unavailable.');next=decodeNativePacket(packet);
+     const packet=await r.json();if(!r.ok)throw Error(packet.detail||'Local telemetry unavailable.');next=decodeNativePacket(packet);if(source.id&&next.missionId!==source.id)throw Error('Awaiting telemetry for the exact approved mission.');
     }else{
      const packet=await client.request(orgPath(source.org)+'/simulations/missions/'+source.id+'/telemetry?limit=300',{signal:controller.signal});
-     next={key:'api:'+source.org+':'+source.id,runId:source.id,mode:'live',source:'Authenticated simulator API',samples:decodeSamples(packet.samples),connected:packet.connected===true,stale:packet.stale!==false,result:null,payloadStatus:'Payload manifest and sensor output are not provided by this telemetry contract.'};
+     next={key:'api:'+source.org+':'+source.id,runId:source.id,mode:['passed','failed'].includes(packet.flight_result?.status)?'recorded':'live',source:'Authenticated simulator API',samples:decodeSamples(packet.samples),connected:typeof packet.gateway_connected==='boolean'?packet.gateway_connected:packet.connected===true,stale:packet.stale!==false,result:packet.flight_result||null,manifest:packet.mission_plan||null,planId:packet.mission_plan?.id,missionId:source.id,missionRevision:packet.mission_plan?.revision,coverage:packet.coverage||[],payloadStatus:packet.coverage?.length?'Modelled 60° nadir footprint from actual PX4 telemetry; no sensor images or measurements.':'No sensor payload evidence is available.'};
     }
     if(active){const receivedAt=Date.now();setData({...next,receivedAt});setClock(receivedAt);setError('');}
    }catch(e){if(active)setError(e.name==='AbortError'?'Telemetry request timed out; reconnecting…':e.message);}

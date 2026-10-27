@@ -40,3 +40,15 @@ export function createSurveyPlan({scenarioId, target, altitude, width, observati
   record.plan.waypoints=ordered.map(c=>({cell_id:c.id,latitude_deg:c.center[1],longitude_deg:c.center[0],altitude_m:a,altitude_reference:'AGL_INTENT',sensor_requirement:scenario.payload}));
   return record;
 }
+
+export function previewSurveyPlan(options){
+ const record=createSurveyPlan({...options,selectedCellIds:[]});
+ const ids=options.selectedCellIds||[];
+ if(ids.length){
+  const chosen=record.plan.routeCells.filter(c=>ids.includes(c.id));
+  if(chosen.length!==ids.length)throw Error('Selected cells no longer belong to this survey.');
+  const points=chosen.map(c=>c.center);
+  record.plan.geometry.features.find(f=>f.properties.kind==='path').geometry.coordinates=points.length===1?[options.target,points[0]]:points;
+ }
+ return record;
+}
