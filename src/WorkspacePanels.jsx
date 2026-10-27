@@ -144,13 +144,13 @@ function safeLink(value) {
     return false;
   }
 }
-export function LoginDialog({ session, offline, close, connected }) {
+export function LoginDialog({ session, offline, close, connected, page=false, loading=false }) {
   const ref = useRef(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   useEffect(() => {
-    ref.current.showModal();
-  }, []);
+    if(!page)ref.current.showModal();
+  }, [page]);
   async function submit(e) {
     e.preventDefault();
     setBusy(true);
@@ -170,33 +170,33 @@ export function LoginDialog({ session, offline, close, connected }) {
       setBusy(false);
     }
   }
-  return (
-    <dialog ref={ref} onCancel={close}>
+  const content = <>
+      {page&&<div className="auth-brand"><img src="/terrasatch-logo.png" alt=""/><span>TERRASATCH<small>sUAS OPERATIONS</small></span></div>}
       <div className="dialog-heading">
         <h2>
-          {session?.user ? "Workspace connected" : "Sign in to TerraSatch"}
+          {session?.user ? "Your demo account" : "Sign in to your demo"}
         </h2>
-        <button
+        {!page&&<button
           className="icon-button"
           aria-label="Close sign in"
           onClick={close}
         >
           <X />
-        </button>
+        </button>}
       </div>
-      {session?.user ? (
+      {loading?<p role="status">Connecting to your TerraSatch account…</p>:session?.user ? (
         <>
           <p>
-            Signed in as {session.user.name}. Choose your organization in
-            Settings.
+            {session.user.name}<br/>{session.user.email}
           </p>
+          <p className="hint">Your authorized reports, survey cells and simulator are connected to this account.</p>
           <button className="primary" onClick={close}>
-            Continue planning
+            Continue to Field Activity
           </button>
         </>
       ) : (
         <form onSubmit={submit}>
-          <p>Use your existing TerraSatch workspace account.</p>
+          <p>Radio or Photon. One cell. One useful result.</p>
           <label htmlFor="email">Email</label>
           <input
             id="email"
@@ -215,7 +215,7 @@ export function LoginDialog({ session, offline, close, connected }) {
             required
           />
           <button className="primary" disabled={busy || offline}>
-            {busy ? "Signing in…" : "Sign in"}
+            {busy ? "Signing in…" : "Sign in & open demo"}
           </button>
           {error && (
             <p role="alert" className="feedback">
@@ -223,11 +223,12 @@ export function LoginDialog({ session, offline, close, connected }) {
             </p>
           )}
           <p className="hint">
-            Your password is sent to the canonical TerraSatch API and is never
-            saved in this app.
+            Use your existing TerraSatch email and password. Your account’s authorized workspace opens automatically.
           </p>
+          {offline&&<p role="status" className="feedback">You’re offline. Reconnect to sign in.</p>}
         </form>
       )}
-    </dialog>
-  );
+      {page&&<p className="auth-signature"><img src="/satchy.png" alt="Satchy"/> LISTEN. WATCH. LEARN. ADAPT.</p>}
+    </>;
+  return page?<main className="auth-screen"><section className="auth-card" aria-label="TerraSatch demo sign in">{content}</section></main>:<dialog ref={ref} onCancel={close}>{content}</dialog>;
 }

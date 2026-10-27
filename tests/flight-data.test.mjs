@@ -2,9 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {decodeNativePacket,decodeSamples,flightConnected,flightConnectionState,FEED_RESPONSE_TIMEOUT_MS,frameAt,observedTrack} from '../src/flight-data.js';
+import {decodeNativePacket,decodeSamples,flightConnected,flightConnectionState,FEED_RESPONSE_TIMEOUT_MS,frameAt,observedTrack,normalizedFlightResult} from '../src/flight-data.js';
 const recording=JSON.parse(await readFile(new URL('../src/evidence/native-flight.json',import.meta.url)));
 const decoded=decodeNativePacket(recording);
+
+test('verified terminal API evidence ends a captured flight even when provider status is absent',()=>{
+ const flags={mission_finished:true,airborne_observed:true,landing_observed:true,disarmed_observed:true};
+ assert.equal(normalizedFlightResult(flags).status,'passed');
+ for(const key of Object.keys(flags))assert.equal(normalizedFlightResult({...flags,[key]:false,status:'passed'}).status,'running');
+ assert.equal(normalizedFlightResult({status:'failed'}).status,'failed');
+ assert.equal(normalizedFlightResult(null),null);
+ assert.equal(flightConnectionState({mode:'recorded',connected:true,samples:[],receivedAt:0},100000),'recorded');
+});
 test('bundled playback preserves the 26 genuine recorded samples and their provenance',()=>{
  assert.equal(recording.samples.length,26);assert.equal(decoded.mode,'recorded');assert.equal(flightConnected(decoded),false);assert.equal(decoded.result.airborne_observed,true);assert.equal(Math.max(...decoded.samples.map(s=>s.relative_altitude_m??-Infinity)),decoded.result.max_observed_relative_altitude_m);assert(decoded.samples.some(s=>s.in_air===true&&s.relative_altitude_m>=3));assert(decoded.samples.every(s=>s.battery_remaining_fraction===null));
 });

@@ -29,6 +29,11 @@ export function flightConnected(data,now=Date.now()){
  const last=data?.samples?.at(-1);
  return data?.mode==='live'&&data.connected===true&&data.stale!==true&&!!last&&last.connected&&now-last.time>=-5000&&now-last.time<=3000;
 }
+export function normalizedFlightResult(result){
+ if(!result||typeof result!=='object'||Array.isArray(result))return null;
+ const completed=['mission_finished','airborne_observed','landing_observed','disarmed_observed'].every(key=>result[key]===true);
+ return {...result,status:['failed','canceled'].includes(result.status)?result.status:completed?'passed':'running'};
+}
 // A current gateway response and fresh flight observations are separate facts.
 // Delayed observations never satisfy the 3 s live/control freshness budget.
 export const FEED_RESPONSE_TIMEOUT_MS=10000;

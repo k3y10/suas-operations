@@ -22,6 +22,7 @@ export default function App() {
     [login, setLogin] = useState(false);
   const [offline, setOffline] = useState(!navigator.onLine),
     [session, setSession] = useState(null),
+    [sessionChecked,setSessionChecked] = useState(false),
     [sessionError, setSessionError] = useState(""),
     [org, setOrg] = useState(""),
     [drafts, setDrafts] = useState(() => readDrafts(localStorage));
@@ -78,6 +79,8 @@ export default function App() {
     } catch {
       setSession(null);
       setSessionError("Workspace unavailable");
+    } finally {
+      setSessionChecked(true);
     }
   }
   useEffect(() => {
@@ -218,6 +221,7 @@ export default function App() {
   const planningPreview=useMemo(()=>{if(review||!target)return null;try{return previewSurveyPlan({scenarioId,target,altitude,width:surveyWidth,region:selectedRegion,selectedCellIds:selectedCells});}catch{return null;}},[scenarioId,target,altitude,surveyWidth,selectedRegion,review,selectedCells]);
   const operationalContext=<OperationContext domain={scenario.domain} data={opData} selectedRegion={selectedRegion} onRegion={chooseRegion} onIncident={chooseIncident} layers={layers} setLayers={setLayers} offline={offline}/>;
   const context = <ReadPanel section={section==='Mission'?scenario.domain+' Context':section} signedIn={signedIn} offline={offline} org={org} data={privateData} error={dataError} loading={loading} load={loadData} login={()=>setLogin(true)}/>;
+  if(!sessionChecked||!signedIn)return <LoginDialog page loading={!sessionChecked} session={session} offline={offline} connected={refresh}/>;
   return <div className="app" style={{'--inspector-width':width+'px'}}>
     <header><button className="icon-button mobile-menu" aria-label="Open navigation" aria-expanded={menu} aria-controls="main-navigation" onClick={()=>{setMenu(!menu);setPanel(false);}}><Menu/></button><a className="identity" href="https://terrasatch.com" target="_blank" rel="noreferrer"><img src="/terrasatch-logo.png" alt=""/>TERRASATCH</a><span className="product">sUAS OPERATIONS</span><div className="operation-switch" role="group" aria-label="Operation mode">{['Avy','Pyro'].map(d=><button key={d} aria-pressed={scenario.domain===d} onClick={()=>chooseScenario(SCENARIOS.find(s=>s.domain===d).id)}>{d}TS</button>)}</div><div className="header-actions"><span className="connection" data-state={flight.connection} title={Number.isFinite(flight.sampleAge)?'Last observation: '+(flight.sampleAge/1000).toFixed(1)+' s ago':undefined}><i/>Simulator: {simulatorStatus}</span><button className="outline" onClick={()=>setLogin(true)}><User size={15}/>{signedIn?session.user.name:'Open workspace'}</button></div></header>
     <nav id="main-navigation" className={menu?'navigation open':'navigation'} aria-label="Main navigation" inert={mobile&&!menu} aria-hidden={mobile&&!menu}>{NAV.map(([name,Icon])=><button key={name} aria-current={section===name?'page':undefined} onClick={()=>select(name)}><Icon size={20} strokeWidth={1.5}/><span>{name}</span></button>)}<button className="settings-nav" aria-current={section==='Settings'?'page':undefined} onClick={()=>select('Settings')}><Settings size={20} strokeWidth={1.5}/><span>Settings</span></button></nav>

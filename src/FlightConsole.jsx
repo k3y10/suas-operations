@@ -1,7 +1,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import recorded from './evidence/native-flight.json';
 import {client,orgPath} from './client.js';
-import {decodeNativePacket,decodeSamples,flightConnected,flightConnectionState,FLIGHT_CONNECTION_LABELS,frameAt,UUID_RE} from './flight-data.js';
+import {decodeNativePacket,decodeSamples,flightConnected,flightConnectionState,FLIGHT_CONNECTION_LABELS,frameAt,UUID_RE,normalizedFlightResult} from './flight-data.js';
 export function useFlightFeed({org,signedIn,offline}){
  const [data,setData]=useState(null),[source,setSource]=useState(null),[error,setError]=useState(''),[playing,setPlaying]=useState(false),[cursor,setCursor]=useState(0),[clock,setClock]=useState(Date.now()),[focus,setFocus]=useState(0);
  const sourceRef=useRef(source);sourceRef.current=source;
@@ -14,10 +14,10 @@ export function useFlightFeed({org,signedIn,offline}){
  useEffect(()=>{if(source?.type==='api'&&(!signedIn||source.org!==org)){stop();}},[org,signedIn,source]);
  useEffect(()=>{
   if(!source||source.type==='replay')return;
-  let active=true,timer,controller,deadline,inFlight=false;
+  let active=true,timer,controller,deadline,inFlight=false,finished=false;
   const cadence=source.type==='local'?1000:3000;
   async function poll(){
-   if(!active||inFlight)return;
+   if(!active||inFlight||finished)return;
    if(offline||document.visibilityState==='hidden'){timer=setTimeout(poll,cadence);return;}
    const started=performance.now();inFlight=true;controller=new AbortController();
    deadline=setTimeout(()=>controller.abort(),source.type==='local'?3000:8000);
@@ -29,9 +29,11 @@ export function useFlightFeed({org,signedIn,offline}){
      const packet=await r.json();if(!r.ok)throw Error(packet.detail||'Local telemetry unavailable.');next=decodeNativePacket(packet);if(source.id&&next.missionId!==source.id)throw Error('Awaiting telemetry for the exact approved mission.');
     }else{
      const packet=await client.request(orgPath(source.org)+'/simulations/missions/'+source.id+'/telemetry?limit=300',{signal:controller.signal});
+     packet.flight_result=normalizedFlightResult(packet.flight_result);
      next={key:'api:'+source.org+':'+source.id,runId:source.id,mode:['passed','failed'].includes(packet.flight_result?.status)?'recorded':'live',source:'Authenticated simulator API',samples:decodeSamples(packet.samples),connected:typeof packet.gateway_connected==='boolean'?packet.gateway_connected:packet.connected===true,stale:packet.stale!==false,result:packet.flight_result||null,manifest:packet.mission_plan||null,planId:packet.mission_plan?.id,missionId:source.id,missionRevision:packet.mission_plan?.revision,coverage:packet.coverage||[],payloadStatus:packet.coverage?.length?'Modelled 60° nadir footprint from actual PX4 telemetry; no sensor images or measurements.':'No sensor payload evidence is available.'};
     }
     if(active){const receivedAt=Date.now();setData({...next,receivedAt});setClock(receivedAt);setError('');}
+    if(next.mode==='recorded'){finished=true;return;}
    }catch(e){if(active)setError(e.name==='AbortError'?'Telemetry request timed out; reconnecting…':e.message);}
    finally{clearTimeout(deadline);inFlight=false;}
    if(active)timer=setTimeout(poll,Math.max(0,cadence-(performance.now()-started)));
