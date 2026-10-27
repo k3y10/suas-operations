@@ -1,0 +1,5 @@
+import React from 'react';
+export default function RunTrace({run}){
+ const fallback=run.steps?.find(s=>s.type==='fallback');
+ return <section className='run-trace'><p className='hint'>Backend request: {run.status}. This status does not establish mission execution.</p>{fallback&&<p className='notice' role='status'>{fallback.detail?.reasoning_provider_available===false?'Reasoning service unavailable · deterministic fallback':fallback.detail?.reason==='grounding_rejected'?'Model output failed grounding checks · verified context fallback':'Deterministic fallback response'}. {typeof fallback.detail?.reason==='string'?'Reason: '+fallback.detail.reason:''}</p>}{run.model&&<p className='hint'>Response provider: {run.model}</p>}<ol className='run-steps'>{run.steps?.map(s=><li key={s.id}><strong>{s.label}</strong><p>{s.status} · {s.type}</p>{typeof s.detail?.reason==='string'&&<p>Reason: {s.detail.reason}</p>}{typeof s.detail?.model==='string'&&<p>Provider: {s.detail.model}</p>}{s.source_refs?.map((r,i)=><code key={i}>{r.type}: {r.id}</code>)}</li>)}</ol></section>;
+}

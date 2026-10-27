@@ -1,0 +1,79 @@
+{
+  "format": "quakwrap.canonical-object-proof-v1.test-vectors",
+  "version": "quakwrap-object-proof-v1",
+  "valid": [
+    {
+      "name": "terrasatch operational event",
+      "objectType": "terrasatch.operational-event",
+      "objectId": "evt-2026-09-21-001",
+      "payload": {
+        "eventType": "avalanche_observation",
+        "elevationFt": 9800,
+        "source": "satchy",
+        "verified": true,
+        "notes": null,
+        "tags": ["wind-slab", "shooting-cracks"]
+      },
+      "commitment": "87ca25a1c988ac02ca4c3469b9d09bc1dc05d849c630ace9d36134823b4407a4",
+      "objectIdDigest": "8d598b7e8a11683322f4ad6cbde9c99312184fce6c20f71605494c8c11a1199b"
+    },
+    {
+      "name": "unicode normalization",
+      "objectType": "example.unicode",
+      "objectId": "record-001",
+      "payload": {
+        "name": "Café",
+        "city": "Salt Lake City"
+      },
+      "equivalentPayload": {
+        "city": "Salt Lake City",
+        "name": "Café"
+      },
+      "commitment": "92693d4872343e755770e4242005dd8c35bcf153c0f00799e00db8982fc0ec7f",
+      "objectIdDigest": "710d96f4c30103c44ce593797b3ee431e99794024b48915bb4f64c8f10738216"
+    },
+    {
+      "name": "key ordering and nested arrays",
+      "objectType": "example.nested",
+      "objectId": "abc-123",
+      "payload": {
+        "b": 2,
+        "a": 1,
+        "nested": {
+          "z": "last",
+          "a": "first"
+        },
+        "items": [3, 2, 1]
+      },
+      "equivalentPayload": {
+        "items": [3, 2, 1],
+        "nested": {
+          "a": "first",
+          "z": "last"
+        },
+        "a": 1,
+        "b": 2
+      },
+      "commitment": "e6fea6bef620239e9b861cf1bdab35dde816450df5de25ac989df664d14a2add",
+      "objectIdDigest": "6a72b9807c1a92099a8557434531a6b2f529806254fd297e788f746b45bfc604"
+    }
+  ],
+  "invalid": [
+    {
+      "name": "fractional number must be represented as a string",
+      "objectType": "example.measurement",
+      "objectId": "m-1",
+      "payload": {
+        "temperature": 32.5
+      }
+    },
+    {
+      "name": "unsafe integer must be represented as a string",
+      "objectType": "example.counter",
+      "objectId": "c-1",
+      "payload": {
+        "count": 9007199254740992
+      }
+    }
+  ]
+}

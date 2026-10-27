@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "TerraSatch sUAS Operations",
+  "short_name": "TerraSatch SUAS",
+  "description": "Simulation planning and mission workspace.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#12151b",
+  "theme_color": "#12151b",
+  "icons": [
+    {
+      "src": "/terrasatch-logo.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
