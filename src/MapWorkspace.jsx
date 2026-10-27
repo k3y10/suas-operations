@@ -311,7 +311,7 @@ export default function MapWorkspace(props) {
       <SingleMap key="primary" {...props} plan={effectivePlan} {...cellProps} basemap={effectiveBasemap} three={props.mode === "3D"} />
       <div className="basemap-controls">
         <div className="basemap-switch" role="group" aria-label="Basemap">
-          {Object.entries(BASEMAPS).map(([id, value]) => (
+          {Object.keys(BASEMAPS).length===1?<span className="basemap-current">{BASEMAPS[effectiveBasemap].label}</span>:Object.entries(BASEMAPS).map(([id, value]) => (
             <button key={id} aria-pressed={effectiveBasemap === id} onClick={() => chooseBasemap(id)}>
               {value.label}
             </button>

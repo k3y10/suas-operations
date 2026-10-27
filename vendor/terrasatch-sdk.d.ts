@@ -1,5 +1,5 @@
 // AUTO-GENERATED FROM TERRASATCH OPENAPI. DO NOT EDIT BY HAND.
-// schema-sha256: 44f19957e8d47990f2d940f5cc890270af7b95fbc1527a702f85203e14784d96
+// schema-sha256: b6818de621a7556e453f4612222d3e2b6bd70c98a7cb08531924c7e76823ea47
 
 export type ActiveMapContext = {
   center_latitude?: number | null;
@@ -436,7 +436,7 @@ export type PushInput = {
 
 export type ReconSelection = {
   confirmed: true;
-  context_id: "alta" | "slough-canyon";
+  context_id: "flagstaff" | "alta" | "slough-canyon";
   gps_accuracy_m?: number | null;
   selected_at: string;
   source_id: string;
