@@ -1,5 +1,5 @@
 // AUTO-GENERATED FROM TERRASATCH OPENAPI. DO NOT EDIT BY HAND.
-// schema-sha256: b73bcb3644c387937b8e1afd63b421a2f643fa5bd239f04f0afb1eda2e109e54
+// schema-sha256: 92f0581e5a7911e622e8304648b7d3da8ffa9c4906a2e086d60cee79d37c6e18
 
 export type ActiveMapContext = {
   center_latitude?: number | null;
@@ -390,6 +390,7 @@ export type PlanResponse = {
   action_status: string;
   authorization?: Record<string, unknown> | null;
   dispatch: Record<string, unknown>;
+  integrity?: Record<string, unknown> | null;
   mission_id: string;
   plan: Record<string, unknown>;
   status: string;
