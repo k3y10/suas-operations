@@ -31,14 +31,15 @@ export default function FieldActivity({org,session,offline,domain,context,onCont
  const current=items.find(x=>x.id===source?.id)||source;
  useEffect(()=>{if(current&&current!==source)onSource(current);},[current]);
  const available=contexts.find(c=>c.domain===domain),request=current?.reconnaissance_request;
- const conflict=request?.context_conflict||request?.context_id&&request.context_id!==context?.id;
+ const reportedContext=request?.context_id||current?.reported_context_id;
+ const conflict=request?.context_conflict||current?.context_conflict||reportedContext&&reportedContext!==context?.id;
  const age=Date.now()-Date.parse(current?.received_at);
- const ready=!!request&&!conflict&&context&&cells.length>=1&&cells.length<=2&&age>=-5000&&age<=1800000;
+ const ready=!!(request||current?.operator_survey_available)&&!conflict&&context&&cells.length>=1&&cells.length<=2&&age>=-5000&&age<=1800000;
  const locked=reportsLocked(review,missionBusy);
  const visibleItems=items.slice(0,6);
  const response=current?.satchy||('Satchy processing: '+current?.status);
  const briefResponse=response.split(/(?<=[.!?])\s+/).slice(0,2).join(' ');
- function openReport(item){if(locked)return;onSource(item);const known=!item.reconnaissance_request?.context_conflict&&contexts.find(c=>c.id===item.reconnaissance_request?.context_id);if(known)onContext(known);}
+ function openReport(item){if(locked)return;onSource(item);const known=!(item.reconnaissance_request?.context_conflict||item.context_conflict)&&contexts.find(c=>c.id===(item.reconnaissance_request?.context_id||item.reported_context_id));if(known)onContext(known);}
  return <section className="field-activity"><h1>Field Activity <span className="live-indicator">{offline?'Offline':error?'Unavailable':'Live'}</span></h1><p className="activity-flow">Report <span>→</span> Satchy + map <span>→</span> Survey <span>→</span> Result</p>
  {!session?.user?<button className="primary draft-button" onClick={login}>Open workspace</button>:<>
  <p className="mobile-runtime-state">Simulator: {simulatorStatus}</p><p className="incoming-notice" role="status" aria-live="polite">{offline?'Offline · incoming reports paused':notification||'Radio + Photon · waiting for reports'}</p>
@@ -49,7 +50,8 @@ export default function FieldActivity({org,session,offline,domain,context,onCont
  <div className="field-context"><span className="small-label">Survey location</span><button className="location-choice" disabled={!available||offline||locked} onClick={()=>onContext(context||available)}>{context?.name||available?.name||'Choose map area'}{!available?' · unavailable':''}</button>{workspace?.sites?.length>1&&<label>Authorized site<select value={site} disabled={locked} onChange={e=>onSite(e.target.value)}>{workspace.sites.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>}</div>
  <div className="field-cells"><strong>{cells.length} selected {cells.length===1?'cell':'cells'}</strong>{cells.map(id=><code key={id}>{id}</code>)}</div>
  {current&&age>1800000&&<p className="hint">This report is outside the current demo window. Receive a fresh report before preparing a mission.</p>}{conflict&&<p className="feedback" role="alert">The reported place conflicts with this location. Confirm the correct context or obtain a corrected report.</p>}
- {!review?.quickSurvey&&<button className="primary draft-button next-action" disabled={!ready||offline||locked} onClick={()=>onQuick(current)}>Review Quick Survey</button>}
+ {!request&&current?.operator_survey_available&&<p className="hint">Survey wording is unclear in the original report. You can explicitly request a survey of the selected cell.</p>}
+ {!review?.quickSurvey&&<button className="primary draft-button next-action" disabled={!ready||offline||locked} onClick={()=>onQuick(current,!request)}>{!request&&current?.operator_survey_available?'Use selected cell for survey':'Review Quick Survey'}</button>}
  {!review?.quickSurvey&&<p className="hint">Use the highlighted cell · 30 m AGL · modelled RGB. Your approval is required before simulation.</p>}
  {current&&<details className="mission-detail"><summary>Source &amp; processing details</summary><p>{current.provenance}</p>{current.satchy&&<p>{current.satchy}</p>}{context?.source_note&&<p>{context.source_note}</p>}{context?.source_url&&<a href={context.source_url} target="_blank" rel="noreferrer">Location source</a>}<p>{new Date(current.received_at).toLocaleString()} · {current.status}</p><p>Reply: {current.delivery_state||'No phone reply requested'}. Provider acceptance is not delivery confirmation.</p><code>{current.id}</code></details>}
  </>}
