@@ -56,7 +56,7 @@ function SingleMap({ three, target, setTarget, regions, offline, basemap, plan, 
         if(hit){const id=hit.properties.id;interaction.current.setSelectedCell(id);if(interaction.current.selectable)interaction.current.onCells(old=>old.includes(id)?old.filter(x=>x!==id):[...old,id]);return;}
         const regionHit=m.getLayer('context-fill')?m.queryRenderedFeatures(e.point,{layers:['context-fill']})[0]:null;
         if(regionHit&&interaction.current.selectable&&regionHit.properties.id!==interaction.current.regionId){const r=interaction.current.regions.find(r=>r.id===regionHit.properties.id);if(r)interaction.current.onRegion(r);return;}
-        interaction.current.setTarget([Number(e.lngLat.lng.toFixed(5)),Number(e.lngLat.lat.toFixed(5))]);
+        if(interaction.current.selectable)interaction.current.setTarget([Number(e.lngLat.lng.toFixed(5)),Number(e.lngLat.lat.toFixed(5))]);
       });
       m.on("load", () => {
         if(map.current!==m)return;

@@ -1,9 +1,10 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {client,orgPath} from './client.js';
 import IntegrityStatus from './IntegrityStatus.jsx';
-export default function OperationsConsole({draft,org,session,offline,feed,login,onPrepared,reset}){
+export default function OperationsConsole({draft,org,session,offline,feed,login,onPrepared,reset,onBusyChange}){
  const [workspace,setWorkspace]=useState(null),[capability,setCapability]=useState(null),[site,setSite]=useState(''),[asset,setAsset]=useState(''),[lease,setLease]=useState(null),[proposal,setProposal]=useState(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[ack,setAck]=useState(false),[radioSource,setRadioSource]=useState(''),[previousMission,setPreviousMission]=useState(null),[coordinates,setCoordinates]=useState(draft.target),[resumeSession,setResumeSession]=useState(''),[resumeMission,setResumeMission]=useState(''),[geometrySource,setGeometrySource]=useState('cells');
  const generation=useRef(0),sessionRequest=useRef(null),proposalRequest=useRef(null);
+ useEffect(()=>{onBusyChange?.(busy);return()=>onBusyChange?.(false);},[busy,onBusyChange]);
  const signedIn=!!session?.user,base=orgPath(org)+'/simulations';
  const pointerKey='terrasatch-sim-pointer:v1:'+org+':'+(session?.user?.id||'');
  useEffect(()=>{generation.current++;setWorkspace(null);setCapability(null);setLease(null);setProposal(null);setSite('');setAsset('');setAck(false);sessionRequest.current=null;proposalRequest.current=null;},[org,signedIn]);
