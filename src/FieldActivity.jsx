@@ -35,8 +35,7 @@ export default function FieldActivity({org,session,offline,domain,context,onCont
  const age=Date.now()-Date.parse(current?.received_at);
  const ready=!!request&&!conflict&&context&&cells.length>=1&&cells.length<=2&&age>=-5000&&age<=1800000;
  const locked=reportsLocked(review,missionBusy);
- const recent=items.filter(item=>Date.now()-Date.parse(item.received_at)<=1800000);
- const visibleItems=recent.length?recent:items.slice(0,3);
+ const visibleItems=items.slice(0,6);
  const response=current?.satchy||('Satchy processing: '+current?.status);
  const briefResponse=response.split(/(?<=[.!?])\s+/).slice(0,2).join(' ');
  function openReport(item){if(locked)return;onSource(item);const known=!item.reconnaissance_request?.context_conflict&&contexts.find(c=>c.id===item.reconnaissance_request?.context_id);if(known)onContext(known);}
