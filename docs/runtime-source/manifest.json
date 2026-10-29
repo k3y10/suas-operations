@@ -1,0 +1,73 @@
+{
+  "purpose": "Source-only backup; installed live paths are unchanged",
+  "validated_on": "2026-10-27",
+  "validated_profile_hash": "3fbdc4701fb50e28e6541b2f6ec96da6be88248027c77d88d2e1b6d20c61d3d7",
+  "px4_revision": "d6f12ad1c4f70ad3230afd7d86e971421e02fef4",
+  "files": [
+    {
+      "path": "snapshot/outputs/simulator-qa/runtime_gateway.py",
+      "bytes": 31984,
+      "sha256": "6a56fe969940e2b0b386c13a495af3e9ae8d8656ed99fda46a0d18b913fa3994"
+    },
+    {
+      "path": "snapshot/outputs/simulator-qa/runtime_worker.py",
+      "bytes": 17769,
+      "sha256": "b45d614103ba6bb2741d077446826b0abb5e9f61c16b15c631025e68423c4c08"
+    },
+    {
+      "path": "snapshot/outputs/simulator-qa/runtime_supervisor.py",
+      "bytes": 2237,
+      "sha256": "35e6250975a2186c9759327df09415be18ca80654c41378defbfd7f812c20a66"
+    },
+    {
+      "path": "snapshot/outputs/simulator-qa/mission_adapter.py",
+      "bytes": 5246,
+      "sha256": "339aaf6c96ff109998dc388806e93ec17f436ffb49b667e11df7f7b07cc286b3"
+    },
+    {
+      "path": "snapshot/outputs/simulator-qa/terrain_world.py",
+      "bytes": 5865,
+      "sha256": "a234e224545766b5fd6529eb13325b23581a4e1eb15323783f509b5a34265d56"
+    },
+    {
+      "path": "snapshot/outputs/simulator-qa/terrain_mesh.py",
+      "bytes": 3388,
+      "sha256": "af6d66526e468962a23c677dd9584e3a0004917678034daf7fadccf04bcd75f4"
+    },
+    {
+      "path": "snapshot/outputs/simulator-qa/coverage_model.py",
+      "bytes": 1690,
+      "sha256": "eaedfde9234940b3dd3b6be523fd092841b6b5b87cfc76b19c1897c8188a05cd"
+    },
+    {
+      "path": "snapshot/outputs/simulator-qa/native_qa.py",
+      "bytes": 12619,
+      "sha256": "1a4f961394db78fdb695e6167596f4c98a01842ef861a3d9fc45875df7dffcb1"
+    },
+    {
+      "path": "snapshot/outputs/simulator-qa/probe.py",
+      "bytes": 8277,
+      "sha256": "b4ad2734600271941d495b9b9d6030de458a6a8715341a0451ffaede3af3af33"
+    },
+    {
+      "path": "snapshot/outputs/simulator-qa/install-managed-runtime.py",
+      "bytes": 3128,
+      "sha256": "60de47eba7f68c0901c3928ce09af960d7faa2743870b754900c943d18368a03"
+    },
+    {
+      "path": "snapshot/outputs/simulator-qa/start-operations.sh",
+      "bytes": 146,
+      "sha256": "a92af1b4ea22dbbb77887cc7bb31f222b412fa529b2ed3e3f6d8eba184a89063"
+    },
+    {
+      "path": "snapshot/work/scripts/test_runtime_recording.py",
+      "bytes": 2679,
+      "sha256": "da747ce5bb867ba1e6467d91d0e14a5d40fc1c54abe83878fdfdd64e7e39553b"
+    },
+    {
+      "path": "snapshot/work/scripts/test_gateway_lifecycle.py",
+      "bytes": 2077,
+      "sha256": "ade0481739f1c04b52ff506d7a0b70ac52ac6f653a1f66a26b83a196f2eb0c31"
+    }
+  ]
+}
